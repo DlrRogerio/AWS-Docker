@@ -174,3 +174,68 @@ O NAT Gateway permite que instâncias em sub-redes privadas acessem a internet p
 - **Sub-rede pública**: Usa o Internet Gateway para acesso direto à internet.
 - **Sub-rede privada**: Usa o NAT Gateway para acesso indireto à internet.
 
+
+Sim, é recomendável criar um **Security Group específico para o Load Balancer (ALB)**. Isso ajuda a separar as regras de segurança do Load Balancer e das instâncias EC2, tornando a configuração mais organizada e segura. 
+
+---
+
+### **Configuração do Security Group para o Load Balancer**
+Aqui está como você deve configurar o **Security Group do ALB**:
+
+#### 1. **Criar um Security Group**
+1. Vá para o console da AWS e abra o serviço **EC2**.
+2. No menu lateral, clique em **Security Groups**.
+3. Clique em **Create Security Group**.
+4. Configure os seguintes detalhes:
+   - **Nome**: `wordpress-alb-sg`.
+   - **Descrição**: Security Group para o Load Balancer do WordPress.
+   - **VPC**: Selecione a mesma VPC onde o Load Balancer e as instâncias EC2 estão configurados (`wordpress-vpc`).
+
+#### 2. **Adicionar Regras de Entrada (Inbound Rules)**
+Essas regras permitem que o Load Balancer receba tráfego externo na porta 80 (HTTP) e 443 (HTTPS):
+
+- **Regra 1 (HTTP)**:
+  - **Tipo**: HTTP
+  - **Protocolo**: TCP
+  - **Porta**: 80
+  - **Origem**: `0.0.0.0/0` (permitir tráfego de qualquer lugar).
+
+- **Regra 2 (HTTPS)**:
+  - **Tipo**: HTTPS
+  - **Protocolo**: TCP
+  - **Porta**: 443
+  - **Origem**: `0.0.0.0/0` (permitir tráfego de qualquer lugar).
+
+> **Nota**: Se você quiser restringir o acesso a uma faixa de IP específica (como para um intranet ou uma rede restrita), substitua `0.0.0.0/0` pela faixa de IP desejada.
+
+#### 3. **Adicionar Regras de Saída (Outbound Rules)**
+O Load Balancer precisa se comunicar com as instâncias EC2 para rotear as requisições. Por padrão, o tráfego de saída é permitido para qualquer destino, então não há necessidade de modificar as regras de saída.
+
+---
+
+### **Configuração do Security Group para as Instâncias EC2**
+As instâncias EC2 que estão atrás do Load Balancer devem aceitar tráfego **somente do Load Balancer**. Configure o **Security Group das Instâncias EC2** com as seguintes regras:
+
+#### Regras de Entrada (Inbound Rules):
+- **Regra 1 (HTTP)**:
+  - **Tipo**: HTTP
+  - **Protocolo**: TCP
+  - **Porta**: 80
+  - **Origem**: O **Security Group do Load Balancer** (`wordpress-alb-sg`).
+
+- **Regra 2 (SSH)**:
+  - **Tipo**: SSH
+  - **Protocolo**: TCP
+  - **Porta**: 22
+  - **Origem**: Seu IP público (ex.: `203.0.113.25/32`).
+
+#### Regras de Saída (Outbound Rules):
+- Permita todo o tráfego de saída (`0.0.0.0/0`) para permitir que as instâncias acessem a internet via NAT Gateway.
+
+---
+
+### **Resumo**
+- **Load Balancer**: Um Security Group (`wordpress-alb-sg`) que permite tráfego HTTP/HTTPS de qualquer lugar.
+- **Instâncias EC2**: Um Security Group que permite tráfego somente do **Security Group do Load Balancer**.
+
+Após configurar o Security Group do Load Balancer, você pode associá-lo ao ALB durante a criação ou edição do Load Balancer. Me avise se precisar de ajuda com isso! 😊
