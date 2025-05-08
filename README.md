@@ -33,91 +33,44 @@ Este projeto tem como objetivo a implementação de uma infraestrutura na AWS pa
 ![img](images/vpc2.png)
 
 4. Após conferir se está igual as imagens, clique em `Criar VPC`.
+5. Assim fica o Mapa de Recursos da sua VPC.
+
+![img](images/mapavpc.png)
 
 ---
 
 ## Security Groups (SG)
 
-1. Abra o painel principal da AWS e pesquise por `Security groups`.
-2. Clique em `Security groups`.
-3. Clique em `Create security groups`.
+Primeiro iremos criar os Security Groups vazios, para depois configurá-los, pois um depende do outro para funcionar e portanto, todos devem estar criados para que possam se interligar.
 
-> **Importante**: Remova todas as regras existentes clicando em `delete`.
+1. Abra o painel principal da AWS e pesquise por `Grupos de Segurança`.
+2. Clique em `Grupos de Segurança`.
+3. Clique em `Criar grupo de segurança`.
+
 
 ### Configurações dos Security Groups
 
-#### 1. `ec2_SG` (Instâncias EC2 - WordPress - Subnet Privada)
+#### 1. Security Group da EC2.
 
-- **Nome:** `ec2_SG`
-- **Descrição:** `ec2`
-- **VPC:** Selecione a VPC criada anteriormente.
-
-📥 **Inbound Rules**  
-| Tipo         | Porta | Origem              | Motivo                                |
-| ------------ | ----- | ------------------- | ------------------------------------- |
-| SSH          | 22    | My IP (ou Bastion)  | Acesso para manutenção                |
-| HTTP         | 80    | `lb_SG`             | Receber tráfego do Load Balancer      |
-| NFS          | 2049  | `efs_SG`            | Montagem do EFS                       |
-
-📤 **Outbound Rules**  
-| Tipo         | Porta | Destino               | Motivo                                        |
-| ------------ | ----- | --------------------- | --------------------------------------------- |
-| All traffic  | All   | `0.0.0.0/0` (via NAT) | Baixar pacotes, updates, conectar ao RDS, etc |
+![img](images/ec2SG.png)
 
 ---
 
-#### 2. `rds_SG` (Banco de Dados - Subnet Privada)
+#### 2. Security Group da RDS.
 
-- **Nome:** `rds_SG`
-- **Descrição:** `rds`
-- **VPC:** Selecione a VPC criada anteriormente.
-
-📥 **Inbound Rules**  
-| Tipo         | Porta | Origem      | Motivo                       |
-| ------------ | ----- | ----------- | ---------------------------- |
-| MySQL/Aurora | 3306  | `ec2_SG`    | Permitir acesso do WordPress |
-
-📤 **Outbound Rules**  
-| Tipo         | Porta | Destino     | Motivo                                                          |
-| ------------ | ----- | ----------- | --------------------------------------------------------------- |
-| MySQL/Aurora | 3306  | `ec2_SG`    | Responder requisições (por boas práticas, mesmo sendo stateful) |
+![img](images/rdsSG.png)
 
 ---
 
-#### 3. `efs_SG` (Elastic File System - Subnet Privada)
+#### 3. Security Group da EFS.
 
-- **Nome:** `efs_SG`
-- **Descrição:** `efs`
-- **VPC:** Selecione a VPC criada anteriormente.
-
-📥 **Inbound Rules**  
-| Tipo | Porta | Origem      | Motivo                    |
-| ---- | ----- | ----------- | ------------------------- |
-| NFS  | 2049  | `ec2_SG`    | Permitir montagem via NFS |
-
-📤 **Outbound Rules**  
-| Tipo | Porta | Destino     | Motivo                   |
-| ---- | ----- | ----------- | ------------------------ |
-| NFS  | 2049  | `ec2_SG`    | Comunicação bidirecional |
+![img](images/efsSG.png)
 
 ---
 
-#### 4. `lb_SG` (Load Balancer - Subnet Pública)
+#### 4. Security Group da LB.
 
-- **Nome:** `lb_SG`
-- **Descrição:** `lb`
-- **VPC:** Selecione a VPC criada anteriormente.
-
-📥 **Inbound Rules**  
-| Tipo | Porta | Origem    | Motivo                      |
-| ---- | ----- | --------- | --------------------------- |
-| HTTP | 80    | 0.0.0.0/0 | Receber tráfego da internet |
-
-📤 **Outbound Rules**  
-| Tipo | Porta | Destino     | Motivo                           |
-| ---- | ----- | ----------- | -------------------------------- |
-| HTTP | 80    | `ec2_SG`    | Encaminhar requisições para EC2s |
-
+![img](images/lbSG.png)
 ---
 
 ## Relational Database Services (RDS)
