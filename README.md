@@ -285,13 +285,15 @@ Mantenha todas as opções como padrão e clique em "**Próximo**".
 
 Nessa etapa, verifique todas as configurações. Se tudo estiver conforme configurado nas etapas anteriores, clique em "**Criar**".
 
+Após isso, copie o ID do sistema de arquivos, pois será usado mais tarde.
+
 ---
 
-## Key Pairs (KP)
+## Par de Chaves
 
-1. Abra o painel principal da AWS e pesquise por `Key pairs`.
-2. Clique em `Create key pairs`.
-3. Nomeie como `key-project2`, selecione `RSA` e `.pem`.
+1. Abra o painel principal da AWS e pesquise por `Pares de chaves`.
+2. Clique em `Criar par de chaves`.
+3. Nomeie como `chave`, selecione `RSA` e `.pem`.
 
 ---
 
