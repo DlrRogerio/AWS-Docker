@@ -48,29 +48,127 @@ Primeiro iremos criar os Security Groups vazios, para depois configurá-los, poi
 3. Clique em `Criar grupo de segurança`.
 
 
-### Configurações dos Security Groups
+# Configuração de Security Groups
 
-#### 1. Security Group da EC2.
+## 1. Security Group da EC2
 
 ![img](images/ec2SG.png)
 
----
-
-#### 2. Security Group da RDS.
+## 2. Security Group da RDS
 
 ![img](images/rdsSG.png)
 
----
-
-#### 3. Security Group da EFS.
+## 3. Security Group da EFS
 
 ![img](images/efsSG.png)
 
----
-
-#### 4. Security Group da LB.
+## 4. Security Group da LB
 
 ![img](images/lbSG.png)
+
+---
+
+# Configuração de Regras de Segurança para os Grupos
+
+## 1. Configuração do Security Group da EC2
+
+1. Selecione o grupo de segurança do EC2, clique em "**Ações**" e "**Editar regras de entrada**".
+
+2. Em "**Regras de entrada**", clique em "**Adicionar regra**". Adicione as seguintes regras:
+
+    - **SSH**:
+        - **Tipo**: SSH
+        - **Porta**: 22
+        - **Tipo de origem**: Meu IP
+
+    - **HTTP**:
+        - **Tipo**: HTTP
+        - **Porta**: 80
+        - **Tipo de origem**: personalizado
+        - **Origem**: grupo de segurança `lbSG`
+
+    - **NFS**:
+        - **Tipo**: NFS
+        - **Porta**: 2049
+        - **Tipo de origem**: personalizado
+        - **Origem**: grupo de segurança `efsSG`
+
+3. Clique em "**Salvar regras**".
+
+4. Verifique as "**Regras de saída**":
+
+    - **All traffic**:
+        - **Tipo**: Todo o tráfego
+        - **Porta**: Tudo
+        - **Tipo de destino**: 0.0.0.0/0
+
+---
+
+## 2. Configuração do Security Group do RDS
+
+1. Selecione o grupo de segurança do RDS, clique em "**Ações**" e "**Editar regras de entrada**".
+
+2. Em "**Regras de entrada**", clique em "**Adicionar regra**". Adicione a seguinte regra:
+
+    - **MySQL/Aurora**:
+        - **Tipo**: MySQL/Aurora
+        - **Porta**: 3306
+        - **Tipo de origem**: personalizado
+        - **Origem**: grupo de segurança `ec2SG`
+
+3. Clique em "**Salvar regras**".
+
+4. Verifique as "**Regras de saída**":
+
+    - **MySQL/Aurora**:
+        - **Tipo**: MySQL/Aurora
+        - **Porta**: 3306
+        - **Tipo de destino**: grupo de segurança `ec2SG`
+
+---
+
+## 3. Configuração do Security Group do EFS
+
+1. Selecione o grupo de segurança do EFS, clique em "**Ações**" e "**Editar regras de entrada**".
+
+2. Em "**Regras de entrada**", clique em "**Adicionar regra**". Adicione a seguinte regra:
+
+    - **NFS**:
+        - **Tipo**: NFS
+        - **Porta**: 2049
+        - **Tipo de origem**: personalizado
+        - **Origem**: grupo de segurança `ec2SG`
+
+3. Clique em "**Salvar regras**".
+
+4. Verifique as "**Regras de saída**":
+
+    - **NFS**:
+        - **Tipo**: NFS
+        - **Porta**: 2049
+        - **Tipo de destino**: grupo de segurança `ec2SG`
+
+---
+
+## 4. Configuração do Security Group do Load Balancer
+
+1. Selecione o grupo de segurança do Load Balancer, clique em "**Ações**" e "**Editar regras de entrada**".
+
+2. Em "**Regras de entrada**", clique em "**Adicionar regra**". Adicione a seguinte regra:
+
+    - **HTTP**:
+        - **Tipo**: HTTP
+        - **Porta**: 80
+        - **Tipo de origem**: 0.0.0.0/0
+
+3. Clique em "**Salvar regras**".
+
+4. Verifique as "**Regras de saída**":
+
+    - **HTTP**:
+        - **Tipo**: HTTP
+        - **Porta**: 80
+        - **Tipo de destino**: grupo de segurança `ec2SG`
 ---
 
 ## Relational Database Services (RDS)
