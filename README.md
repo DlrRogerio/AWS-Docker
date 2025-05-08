@@ -14,12 +14,9 @@ Este projeto tem como objetivo a implementação de uma infraestrutura na AWS pa
 
 - [Virtual Private Cloud (VPC)](#virtual-private-cloud-vpc)
 - [Security Groups (SG)](#security-groups-sg)
+  - [Configuração de Security Groups](#configuração-de-security-groups)
+  - [Configuração de Regras de Segurança](#configuração-de-regras-de-segurança)
 - [Relational Database Services (RDS)](#relational-database-services-rds)
-- [Elastic File System (EFS)](#elastic-file-system-efs)
-- [Key Pairs (KP)](#key-pairs-kp)
-- [Launch Template (LT)](#launch-template-lt)
-- [Load Balancer (LB)](#load-balancer-lb)
-- [Auto Scaling Group (ASG)](#auto-scaling-group-asg)
 
 ---
 
@@ -33,7 +30,7 @@ Este projeto tem como objetivo a implementação de uma infraestrutura na AWS pa
 ![img](images/vpc2.png)
 
 4. Após conferir se está igual as imagens, clique em `Criar VPC`.
-5. Assim fica o Mapa de Recursos da sua VPC.
+5. Assim fica o Mapa de Recursos da sua VPC:
 
 ![img](images/mapavpc.png)
 
@@ -41,36 +38,35 @@ Este projeto tem como objetivo a implementação de uma infraestrutura na AWS pa
 
 ## Security Groups (SG)
 
-Primeiro iremos criar os Security Groups vazios, para depois configurá-los, pois um depende do outro para funcionar e portanto, todos devem estar criados para que possam se interligar.
+Primeiro iremos criar os Security Groups vazios, para depois configurá-los, pois um depende do outro para funcionar. Portanto, todos devem estar criados para que possam se interligar.
 
 1. Abra o painel principal da AWS e pesquise por `Grupos de Segurança`.
 2. Clique em `Grupos de Segurança`.
 3. Clique em `Criar grupo de segurança`.
 
+### Configuração de Security Groups
 
-# Configuração de Security Groups
-
-## 1. Security Group da EC2
+#### 1. Security Group da EC2
 
 ![img](images/ec2SG.png)
 
-## 2. Security Group da RDS
+#### 2. Security Group da RDS
 
 ![img](images/rdsSG.png)
 
-## 3. Security Group da EFS
+#### 3. Security Group da EFS
 
 ![img](images/efsSG.png)
 
-## 4. Security Group da LB
+#### 4. Security Group da LB
 
 ![img](images/lbSG.png)
 
 ---
 
-# Configuração de Regras de Segurança para os Grupos
+### Configuração de Regras de Segurança
 
-## 1. Configuração do Security Group da EC2
+#### 1. Configuração do Security Group da EC2
 
 1. Selecione o grupo de segurança do EC2, clique em "**Ações**" e "**Editar regras de entrada**".
 
@@ -104,7 +100,7 @@ Primeiro iremos criar os Security Groups vazios, para depois configurá-los, poi
 
 ---
 
-## 2. Configuração do Security Group do RDS
+#### 2. Configuração do Security Group do RDS
 
 1. Selecione o grupo de segurança do RDS, clique em "**Ações**" e "**Editar regras de entrada**".
 
@@ -127,7 +123,7 @@ Primeiro iremos criar os Security Groups vazios, para depois configurá-los, poi
 
 ---
 
-## 3. Configuração do Security Group do EFS
+#### 3. Configuração do Security Group do EFS
 
 1. Selecione o grupo de segurança do EFS, clique em "**Ações**" e "**Editar regras de entrada**".
 
@@ -150,7 +146,7 @@ Primeiro iremos criar os Security Groups vazios, para depois configurá-los, poi
 
 ---
 
-## 4. Configuração do Security Group do Load Balancer
+#### 4. Configuração do Security Group do Load Balancer
 
 1. Selecione o grupo de segurança do Load Balancer, clique em "**Ações**" e "**Editar regras de entrada**".
 
@@ -169,6 +165,7 @@ Primeiro iremos criar os Security Groups vazios, para depois configurá-los, poi
         - **Tipo**: HTTP
         - **Porta**: 80
         - **Tipo de destino**: grupo de segurança `ec2SG`
+
 ---
 
 ## Relational Database Services (RDS)
@@ -191,11 +188,11 @@ Primeiro iremos criar os Security Groups vazios, para depois configurá-los, poi
 
 9. Em "**Configuração da instância**", selecione "**db.t3.micro**".
 
-10. Em "**Armazenamento**", deixe igual da imagem.
+10. Em "**Armazenamento**", deixe igual à imagem abaixo:
     
 ![img](images/rds1.png)
 
-#### 5.2 Configurações de Rede
+### Configurações de Rede
 
 1. Em "**Conectividade**", selecione "**Não se conectar a um recurso de computação do EC2**". Iremos configurar a conexão às instâncias do EC2 manualmente mais tarde.
 
@@ -209,23 +206,22 @@ Primeiro iremos criar os Security Groups vazios, para depois configurá-los, poi
 
 6. Em "**Zona de disponibilidade**", selecione a opção "**Sem preferência**".
 
-#### 5.3 Configurações de Autenticação 
+### Configurações de Autenticação 
 
 1. Em "**Autenticação de banco de dados**", selecione a opção "**Autenticação de senha**".
 
-#### 5.4 Configurações Adicionais
+### Configurações Adicionais
 
 1. Em "**Nome do banco de dados inicial**", dê um nome descritivo ao banco de dados.
 
 ![img](images/rds2.png)
-
 
 2. Mantenha as demais configurações (Criptografia, Logs, etc.) padrão.
 
 3. Em "**Custos mensais estimados**", revise as informações e certifique-se de que o uso se enquadra no nível gratuito.
 
 4. Se tudo estiver conforme configurado nas etapas anteriores, clique em "**Criar banco de dados**".
-   
+
 ---
 
 ## Elastic File System (EFS)
