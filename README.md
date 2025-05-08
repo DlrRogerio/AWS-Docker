@@ -26,12 +26,13 @@ Este projeto tem como objetivo a implementação de uma infraestrutura na AWS pa
 ## Virtual Private Cloud (VPC)
 
 1. Abra o painel principal da AWS e pesquise por `VPC`.
-2. Clique em `Your VPCs`.
-3. Clique em `Create VPC`.
+2. Clique em `Suas VPCs`.
+3. Clique em `Criar VPC`.
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/2937f94e-9467-44f1-a972-69055ae2aa01" alt="Img VPC" width="150">
-</p>
+![img](images/vpc1.png)
+![img](images/vpc2.png)
+
+4. Após conferir se está igual as imagens, clique em `Criar VPC`.
 
 ---
 
