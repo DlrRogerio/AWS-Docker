@@ -226,17 +226,64 @@ Primeiro iremos criar os Security Groups vazios, para depois configurá-los, poi
 
 ## Elastic File System (EFS)
 
-1. Abra o painel principal da AWS e pesquise por `EFS`.
-2. Clique em `File systems` > `Create file system`.
-3. Nomeie como `FS-Project2` e selecione a VPC criada anteriormente.
+Iremos configurar um sistema de arquivos elástico para que as instâncias que hospedam o WordPress possam compartilhar arquivos mesmo em diferentes zonas de disponibilidade.
 
-**Configuração de Subnets**:
-- Escolha as subnets privadas da VPC (ex.: `us-east-1a` e `us-east-1b`).
-- Security Group: `efs_SG`.
+#### 4.1 Configurações Gerais
 
-Por fim, clique em `Create`.
+1. Na barra de pesquisa do console AWS, procure por "**EFS**".
 
-> **Importante**: Anote o ID do EFS, pois será utilizado no UserData.
+2. Na página inicial do serviço, clique em "**Criar sistema de arquivos**" e "**Personalizar**".
+
+3. Dê um nome ao sistema de arquivos.
+
+4. Em "**Tipo do sistema de arquivos**", selecione "**Regional**".
+
+5. Mantenha as **configurações gerais** padrão:
+
+    - Backup automático: **Desabilitado**
+    - Gerenciamento de ciclo de vida: 
+        - Transição para Infrequent Access: **Nenhum**
+        - Transição para Archive: **Nenhum**
+        - Transição para o Padrão: **Nenhum**
+    - Criptografia: **Habilitado**
+
+6. Mude **configurações de performance**:
+
+    - Modo de taxa de transferência: "**Intermitente**"
+
+7. Verifique as **configurações adicionais** e cerfique-se de que "**Uso geral**" está selecionado. 
+
+8. Opcionalmente, adicione tags descritivas ao sistema de arquivos para melhorar a identificação dos recursos.
+
+9. Clique em "**Próximo**".
+
+#### 4.2 Configurações de Rede
+
+1. Em "**Rede**", selecione a VPC criada para o projeto. 
+
+2. Em "**Destinos de montagem**", adicionaremos dois destinos de montagem, um para cada zona de disponibilidade: 
+
+    AZ 1:
+    - Zona de disponibilidade: "**us-east-1a**"
+    - ID da sub-rede: selecione a **sub-rede privada** disponível
+    - Endereço de IP: mantenha o padrão ("**Automático**")
+    - Grupos de segurança: selecione o **grupo de segurança do EFS**
+   
+    AZ 2:
+    - Zona de disponibilidade: "**us-east-1b**"
+    - ID da sub-rede: selecione a **sub-rede privada** disponível
+    - Endereço de IP: mantenha o padrão ("**Automático**")
+    - Grupos de segurança: selecione o **grupo de segurança do EFS**
+
+3. Clique em "**Próximo**".
+
+#### 4.3 Política do Sistema de Arquivos
+
+Mantenha todas as opções como padrão e clique em "**Próximo**".
+
+#### 4.4 Revisão das Configurações
+
+Nessa etapa, verifique todas as configurações. Se tudo estiver conforme configurado nas etapas anteriores, clique em "**Criar**".
 
 ---
 
