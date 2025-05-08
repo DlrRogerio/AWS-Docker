@@ -173,22 +173,59 @@ Primeiro iremos criar os Security Groups vazios, para depois configurá-los, poi
 
 ## Relational Database Services (RDS)
 
-1. Abra o painel principal da AWS e pesquise por `RDS`.
-2. Clique em `Databases` > `Create Database`.
-3. Escolha `MySQL` como engine e selecione a versão mais recente.
-4. Configure como `Free tier` e `Single-AZ DB instance deployment`.
+1. Na barra de pesquisa do console AWS, procure por "**RDS**".
 
-**Configuração do Banco de Dados**:
-- **Nome:** `database-project2`
-- **Usuário:** `admin`
-- **Senha:** Crie uma senha forte e guarde-a.
+2. Na página inicial do serviço, clique em "**Criar banco de dados**". 
 
-**Configuração da Rede**:
-- **VPC:** Selecione a VPC criada anteriormente.
-- **Security Group:** `rds_SG`.
+3. Selecione "**Criação padrão**".
 
-Por fim, clique em `Create database`.
+4. Em "**Opções de mecanismo**", selecione o banco de dados "**MySQL**" e escolha a versão de mecanismo mais recente.
 
+5. Em "**Modelos**", selecione "**Nível gratuito**".
+
+6. Em "**Configurações**", dê um nome descritivo à instância do banco de dados.
+
+7. Em "**Configurações de credenciais**", digite um nome de usuário para a instância do banco de dados. Esse será o ID do usuário principal do banco de dados.
+
+8. Em "**Gerenciamento de credenciais**", selecione "**Autogerenciada**". Nessa opção você irá criar uma senha.
+
+9. Em "**Configuração da instância**", selecione "**db.t3.micro**".
+
+10. Em "**Armazenamento**", deixe igual da imagem.
+    
+![img](images/rds1.png)
+
+#### 5.2 Configurações de Rede
+
+1. Em "**Conectividade**", selecione "**Não se conectar a um recurso de computação do EC2**". Iremos configurar a conexão às instâncias do EC2 manualmente mais tarde.
+
+2. Em "**Nuvem privada virtual (VPC)**", selecione a VPC criada para o projeto.
+
+3. Em "**Grupo de sub-redes de banco de dados**", selecione a opção "**Criar novo grupo de sub-redes do banco de dados**".
+
+4. Em "**Acesso público**", selecione a opção "**Não**".
+
+5. Em "**Grupo de segurança de VPC (firewall)**", selecione a opção "**Selecionar existente**", e, em "**Grupos de segurança da VPC existentes**", selecione o **grupo de segurança do RDS** criado anteriormente.
+
+6. Em "**Zona de disponibilidade**", selecione a opção "**Sem preferência**".
+
+#### 5.3 Configurações de Autenticação 
+
+1. Em "**Autenticação de banco de dados**", selecione a opção "**Autenticação de senha**".
+
+#### 5.4 Configurações Adicionais
+
+1. Em "**Nome do banco de dados inicial**", dê um nome descritivo ao banco de dados.
+
+![img](images/rds2.png)
+
+
+2. Mantenha as demais configurações (Criptografia, Logs, etc.) padrão.
+
+3. Em "**Custos mensais estimados**", revise as informações e certifique-se de que o uso se enquadra no nível gratuito.
+
+4. Se tudo estiver conforme configurado nas etapas anteriores, clique em "**Criar banco de dados**".
+   
 ---
 
 ## Elastic File System (EFS)
