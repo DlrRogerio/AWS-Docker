@@ -168,6 +168,14 @@ Primeiro iremos criar os Security Groups vazios, para depois configurá-los, poi
 
 ---
 
+## Par de Chaves
+
+1. Abra o painel principal da AWS e pesquise por `Pares de chaves`.
+2. Clique em `Criar par de chaves`.
+3. Nomeie como `chave`, selecione `RSA` e `.pem`.
+
+---
+
 ## Relational Database Services (RDS)
 
 1. Na barra de pesquisa do console AWS, procure por "**RDS**".
@@ -289,86 +297,168 @@ Após isso, copie o ID do sistema de arquivos, pois será usado mais tarde.
 
 ---
 
-## Par de Chaves
-
-1. Abra o painel principal da AWS e pesquise por `Pares de chaves`.
-2. Clique em `Criar par de chaves`.
-3. Nomeie como `chave`, selecione `RSA` e `.pem`.
-
----
-
-## Launch Template (LT)
+## Modelo de Execução
 
 1. Abra o painel principal da AWS e pesquise por `EC2`.
-2. Clique em `Launch templates` > `Create launch template`.
+2. Clique em `Modelos de Execução`.
+3. Clique em `Criar modelo de execução`.
+4. Preencha as seguintes informações:
+   1. **Nome e Descrição**: Dê um nome e uma descrição ao modelo de execução.
+   2. **Imagens de Aplicação e de Sistema Operacional**: Selecione a AMI do Amazon Linux.
+   3. **Tipo de Instância**: Escolha `t2.micro`.
+   4. **Par de Chaves**: Selecione o par de chaves criado anteriormente.
+   5. **Configurações de Rede**:
+      - Selecione `Não incluir no modelo de execução`.
+      - Em `Firewall`, selecione o grupo de segurança das instâncias do EC2.
+   6. **Detalhes Avançados**:
+      - Mantenha as opções padrão.
+      - Vá até a última opção, `Dados do Usuário`, para adicionar o script de inicialização.
 
-**Configurações**:
-- **Nome:** `MyTemplateWordPress`
-- **AMI:** `Amazon Linux`.
-- **Tipo de instância:** `t2.micro`.
-- **Key Pair:** `key-project2`.
-- **Security Group:** `ec2_SG`.
+5. Crie um **script de inicialização** para ambas as instâncias do EC2. O script será usado para configurar o ambiente e iniciar os serviços necessários.
 
-**UserData**:
-```bash
+```sh
 #!/bin/bash
-# Script de inicialização da instância
-EFS_FILE_SYSTEM_ID="<seu_file_id_aqui>"
-DB_HOST="<seu_host_do_banco_de_dados_aqui>"
-DB_NAME="<seu_nome_do_banco_de_dados_aqui>"
-DB_USER="<seu_usuario_do_banco_aqui>"
-DB_PASSWORD="<sua_senha_do_banco_aqui>"
 
-# Instalação e configuração do Docker
+# ---------------------- CONFIGURAÇÕES INICIAIS ------------------------
+
+# Identificador do sistema de arquivos EFS da AWS
+EFS_ID="fs-xxxxxxxx"  # Substitua pelo seu File System ID
+
+# Informações de conexão com o banco de dados
+MYSQL_HOST="database.example.com"
+MYSQL_DATABASE="wordpress_db"
+MYSQL_USER="wp_user"
+MYSQL_PASS="strong_password_here"
+
+# Caminhos e versões
+COMPOSE_VER="v2.34.0"
+APP_DIR="/home/ec2-user/wordpress-app"
+MOUNT_PATH="/mnt/aws-efs"
+
+# ---------------------- INSTALAÇÃO DE DEPENDÊNCIAS --------------------
+
+# Atualiza os pacotes do sistema
 yum update -y
-yum install -y docker
-service docker start
-systemctl enable docker
-usermod -a -G docker ec2-user
 
-# Docker Compose
-curl -SL https://github.com/docker/compose/releases/download/v2.34.0/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+# Instala a AWS CLI (útil para operações com serviços da AWS)
+yum install -y aws-cli
+
+# Instala o Docker e ativa seu serviço
+yum install -y docker
+systemctl start docker
+systemctl enable docker
+
+# Adiciona o usuário padrão ao grupo Docker (evita uso do sudo)
+usermod -aG docker ec2-user
+
+# Instala o Docker Compose em sua versão especificada
+curl -L "https://github.com/docker/compose/releases/download/${COMPOSE_VER}/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
 chmod +x /usr/local/bin/docker-compose
 
-# Montagem do EFS
+# --------------------- MONTAGEM DO ARMAZENAMENTO EFS ------------------
+
+# Instala utilitários do EFS
 yum install -y amazon-efs-utils
-mkdir -p /mnt/efs
-mount -t efs ${EFS_FILE_SYSTEM_ID}:/ /mnt/efs
-echo "${EFS_FILE_SYSTEM_ID}:/ /mnt/efs efs defaults,_netdev 0 0" >> /etc/fstab
+
+# Cria o diretório onde o EFS será montado
+mkdir -p "${MOUNT_PATH}"
+
+# Faz a montagem do EFS no diretório criado
+mount -t efs "${EFS_ID}":/ "${MOUNT_PATH}"
+
+# Garante que a montagem persista após reinicializações
+echo "${EFS_ID}:/ ${MOUNT_PATH} efs defaults,_netdev 0 0" >> /etc/fstab
+
+# Ajusta as permissões para que o usuário www-data (id 33) tenha controle
+chown -R 33:33 "${MOUNT_PATH}"
+
+# ------------------------ CRIAÇÃO DO PROJETO --------------------------
+
+# Cria o diretório do projeto e navega até ele
+mkdir -p "${APP_DIR}"
+cd "${APP_DIR}"
+
+# Cria o arquivo docker-compose.yml com o serviço WordPress
+cat <<EOF > docker-compose.yml
+version: '3.8'
+
+services:
+  wordpress:
+    image: wordpress:latest
+    container_name: wp_app
+    environment:
+      WORDPRESS_DB_HOST: ${MYSQL_HOST}
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASS}
+    ports:
+      - "80:80"
+    volumes:
+      - ${MOUNT_PATH}:/var/www/html
+EOF
+
+# ------------------------ EXECUÇÃO DO CONTAINER ------------------------
+
+# Inicia o container do WordPress em segundo plano
+docker-compose up -d
 ```
 
-Clique em `Create launch template`.
+6. Clique em `Criar modelo de execução`
 
 ---
 
 ## Load Balancer (LB)
 
-1. Abra o painel principal da AWS e pesquise por `Load Balancers`.
-2. Clique em `Create load balancer` > `Classic Load Balancer`.
-3. Configure como `Internet-facing` e selecione as subnets **públicas**.
-4. Associe o Security Group: `lb_SG`.
-5. Configure o `Ping Path` como `/wp-admin/install.php`.
+Siga os passos abaixo para configurar um **Classic Load Balancer** na AWS:
 
-Por fim, clique em `Create load balancer`.
+1. Abra o painel principal da AWS e pesquise por `Load Balancers`.
+2. Clique em `Balanceador de Carga`.
+3. Clique em `Criar balanceador de carga`.
+4. Clique na setinha em `Classic Load Balancer`.
+
+
+5. Dê um nome para o Load Balancer:
+   - Nome: `LB-Projeto`.
+
+6. Em **Esquema**, selecione:
+   - `Voltado para a Internet`.
+
+7. Em **VPC**, selecione a criada anteriormente.
+
+8. Marque as seguintes opções:
+   - Marque as 2 AZ.
+   - Selecione a **subnet pública** de cada AZ.
+
+9. Selecione o Security Group do Load Balancer:
+   - `lbSG`.
+
+10. Configure o Health Check com as seguintes opções:
+    1. **Caminho de Ping**: `/wp-admin/install.php`.
+    2. **Tempo limite de resposta**: `5`.
+    3. **Intervalo**: `15`.
+    4. **Limite não íntegro**: `2`.
+    5. **Limite íntegro**: `3`.
+
+11. Clique em `Create Load Balancer`.
 
 ---
 
 ## Auto Scaling Group (ASG)
 
-1. Abra o painel principal da AWS e pesquise por `Auto scaling groups`.
-2. Clique em `Create Auto Scaling group`.
-
+1. Abra o painel principal da AWS e pesquise por `Grupos Auto Scaling`.
+2. Clique em `Criar grupo do Auto Scaling`.
+3. De um nome.
+4. Escolha o Modelo de Execução criado anteriormente.
+5. 
 **Configurações**:
-- **Nome:** `ASG-Project2`.
-- **Launch Template:** Selecione o template criado anteriormente.
 - **VPC:** Selecione a criada anteriormente.
-- **Subnets:** Escolha as subnets **privadas**.
+- **Subnets:** Escolha as subredes **privadas**.
 - **Load Balancer:** Selecione o Load Balancer criado anteriormente.
 
 **Configuração de Capacidade**:
-- **Desired capacity:** `2`.
-- **Min desired capacity:** `2`.
-- **Max desired capacity:** `4`.
+- **Capacidade desejada:** `2`.
+- **Capacidade mínima:** `2`.
+- **Capacidade máxima:** `4`.
 
 **Outras Configurações**:
 - Habilite `Elastic Load Balancing health checks`.
